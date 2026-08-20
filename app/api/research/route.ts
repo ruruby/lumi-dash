@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCollection } from "@/lib/research-collector";
 import {
+  getCollectionSummary,
   getCollectorStatus,
   getTopicProfile,
   listCandidates,
@@ -36,6 +37,11 @@ export async function GET(request: NextRequest) {
     if (mode === "collectorStatus") {
       const topics = await getCollectorStatus();
       return NextResponse.json({ topics });
+    }
+
+    if (mode === "collectionSummary") {
+      const summary = await getCollectionSummary();
+      return NextResponse.json({ summary });
     }
 
     const candidates = await listCandidates(topicKey ?? undefined);

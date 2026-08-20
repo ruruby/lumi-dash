@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSampleCandidates, getSampleCollectorStatus, getSampleNoteDraft, getSampleTopicProfile } from "@/lib/sample-mode";
+import {
+  getSampleCandidates,
+  getSampleCollectionSummary,
+  getSampleCollectorStatus,
+  getSampleNoteDraft,
+  getSampleTopicProfile,
+} from "@/lib/sample-mode";
 import type {
   Candidate,
   CandidateStatus,
@@ -9,7 +15,7 @@ import type {
   TopicProfile,
   WikiNoteDraft,
 } from "@/lib/research-types";
-import type { TopicCollectorStatus } from "@/lib/research-store";
+import type { CollectionSummary, TopicCollectorStatus } from "@/lib/research-store";
 
 export type InboxState =
   | { status: "idle" }
@@ -307,5 +313,41 @@ export function useCollectorStatus(demo: boolean): CollectorStatusState {
   }, [demo]);
 
   if (demo) return { status: "ready", topics: getSampleCollectorStatus(), demo: true };
+  return liveState;
+}
+
+export type CollectionSummaryState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; summary: CollectionSummary; demo?: boolean };
+
+/** Cross-category totals (papers, org publications, notes added) for the stat card next to Research Radar. */
+export function useCollectionSummary(demo: boolean): CollectionSummaryState {
+  const [liveState, setLiveState] = useState<CollectionSummaryState>({ status: "loading" });
+
+  useEffect(() => {
+    if (demo) return;
+
+    let cancelled = false;
+    fetch("/api/research?mode=collectionSummary")
+      .then(async (response) => {
+        const data = await response.json();
+        if (cancelled) return;
+        if (!response.ok) {
+          setLiveState({ status: "error", message: data.error ?? "수집 통계를 읽지 못했어요." });
+          return;
+        }
+        setLiveState({ status: "ready", summary: data.summary });
+      })
+      .catch(() => {
+        if (!cancelled) setLiveState({ status: "error", message: "네트워크 오류로 수집 통계를 읽지 못했어요." });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [demo]);
+
+  if (demo) return { status: "ready", summary: getSampleCollectionSummary(), demo: true };
   return liveState;
 }

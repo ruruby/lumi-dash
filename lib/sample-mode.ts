@@ -2,7 +2,8 @@ import type { OverviewMetrics, OverviewNarrative } from "@/lib/overview-types";
 import { TECH_STAGES, type TechProgressResult } from "@/lib/tech-progress-types";
 import type { NewsResult } from "@/lib/useCategoryNews";
 import type { Candidate, TopicProfile } from "@/lib/research-types";
-import type { TopicCollectorStatus } from "@/lib/research-store";
+import type { CollectionSummary, TopicCollectorStatus } from "@/lib/research-store";
+import type { SignalFeed } from "@/lib/signal-types";
 
 export function isSampleVaultPath(vaultPath: string): boolean {
   const normalized = vaultPath.trim().replaceAll("\\", "/").replace(/\/$/, "").toLowerCase();
@@ -70,11 +71,13 @@ export function getSampleNarrative(metrics: OverviewMetrics): OverviewNarrative 
       },
     ],
     insights: {
-      emergingTopic: "관측성과 평가가 결합된 에이전트 운영",
-      suggestedKeyword: "agent evaluation",
-      researchGap: "샘플 노트에는 멀티모달 에이전트의 실패 복구 사례가 부족합니다.",
-      newConnection: "효율적인 추론 지표를 LLM 평가 자동화와 같은 실행에서 수집할 수 있습니다.",
+      emergingTopic: "[샘플] LLM 관측성 관련 연구가 최근 빠르게 늘고 있습니다.",
+      newConnection: "[샘플] LLM 관측성 연구와 평가 자동화 연구 사이에 강한 연관성이 있습니다 — 둘 다 실행 trace를 근거로 삼습니다.",
+      researchGap: "[샘플] 코딩 에이전트 관련 자료는 작업 루프 설계에 집중되어 있지만, 실패 복구(failure recovery) 관련 자료는 상대적으로 부족합니다.",
+      suggestedKeyword: "agentic failure recovery",
     },
+    signalSummary:
+      "[샘플] 이번 주에는 LLM 관측성과 에이전트 도구 권한 관련 논의가 눈에 띄게 늘었습니다.",
   };
 }
 
@@ -316,6 +319,71 @@ export function getSampleCollectorStatus(): TopicCollectorStatus[] {
       ignored: 1,
     },
   ];
+}
+
+/** Demo cross-category totals for the stat card next to Research Radar. */
+export function getSampleCollectionSummary(): CollectionSummary {
+  return {
+    papers: 6,
+    organizations: 2,
+    addedToWiki: 0,
+    lastCollectedAt: Date.UTC(2026, 7, 19, 9, 30),
+  };
+}
+
+/** Demo News & Signals feed — matches the real feed's three collected lanes plus the uncollected Community lane. */
+export function getSampleSignalFeed(): SignalFeed {
+  const hour = 60 * 60 * 1000;
+  const now = Date.UTC(2026, 7, 20, 9, 0);
+
+  const items = [
+    {
+      id: "sample-security-1",
+      lane: "security" as const,
+      title: "[샘플] Critical vulnerability discovered in MCP reference server",
+      url: "https://example.com/lumi-demo/security/1",
+      sourceLabel: "SecurityNews",
+      at: now - 2 * hour,
+    },
+    {
+      id: "sample-research-1",
+      lane: "research" as const,
+      title: "[샘플] Securing Agentic AI Systems: A Survey",
+      url: "https://example.com/lumi-demo/research/1",
+      sourceLabel: "arXiv",
+      at: now - 5 * hour,
+    },
+    {
+      id: "sample-industry-1",
+      lane: "industry" as const,
+      title: "[샘플] NIST releases draft guidance on agentic AI risk",
+      url: "https://example.com/lumi-demo/industry/1",
+      sourceLabel: "NIST",
+      at: now - 8 * hour,
+    },
+    {
+      id: "sample-security-2",
+      lane: "security" as const,
+      title: "[샘플] Vendor advisory: authentication bypass in popular LLM gateway",
+      url: "https://example.com/lumi-demo/security/2",
+      sourceLabel: "보안뉴스",
+      at: now - 14 * hour,
+    },
+    {
+      id: "sample-research-2",
+      lane: "research" as const,
+      title: "[샘플] Tool Poisoning Attacks Against LLM Agents",
+      url: "https://example.com/lumi-demo/research/2",
+      sourceLabel: "USENIX Security",
+      at: now - 20 * hour,
+    },
+  ];
+
+  return {
+    items,
+    laneCounts: { security: 2, research: 2, industry: 1, community: 0 },
+    laneTruncated: { security: false, research: false, industry: false, community: false },
+  };
 }
 
 export function getSampleChatReply(source: "wiki" | "news", question: string): string {

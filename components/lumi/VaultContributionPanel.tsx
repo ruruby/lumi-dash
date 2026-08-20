@@ -97,7 +97,10 @@ export function VaultContributionPanel({ vaultPath, demo }: { vaultPath: string;
             </div>
 
             <div className="mt-7 overflow-x-auto pb-1">
-              <div className="flex min-w-[760px] gap-1.5">
+              {/* min-w-max, not a fixed px width: the 26-week grid is only ~490px
+                  wide, so an oversized fixed min-width just left dead space
+                  (or forced a pointless scrollbar) past the last real week. */}
+              <div className="flex min-w-max gap-1.5">
                 <div className="grid grid-rows-7 gap-1 self-start pr-1 pt-0.5 text-[9px] text-white/35">
                   <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
                 </div>

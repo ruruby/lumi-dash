@@ -18,15 +18,20 @@ import { ChatModal } from "@/components/lumi/ChatModal";
 import { AmbientBackground } from "@/components/lumi/AmbientBackground";
 import { BottomDock, type DockView } from "@/components/lumi/BottomDock";
 import { ResearchInboxPanel } from "@/components/lumi/ResearchInboxPanel";
+import { CollectionStatsPanel } from "@/components/lumi/CollectionStatsPanel";
 import { TopicProfilePanel } from "@/components/lumi/TopicProfilePanel";
 import { SettingsPanel } from "@/components/lumi/SettingsPanel";
 import { InboxTeaser } from "@/components/lumi/InboxTeaser";
+import { SignalFeedPanel } from "@/components/lumi/SignalFeedPanel";
+import { SignalSummaryPanel } from "@/components/lumi/SignalSummaryPanel";
 import { useCategoryNews } from "@/lib/useCategoryNews";
 import { useVaultRoot, useVaultNotes } from "@/lib/useVault";
 import { useCategories } from "@/lib/useCategories";
 import { useOverview } from "@/lib/useOverview";
 import { useVisitLog } from "@/lib/useVisitLog";
 import { useInboxCounts, useResearchInbox } from "@/lib/useResearchInbox";
+import { useSignalFeed } from "@/lib/useSignalFeed";
+import { useNotifications, type NotificationItem } from "@/lib/useNotifications";
 import { MANROPE, PAGE_BACKGROUND, TEXT } from "@/lib/lumi-theme";
 import { isSampleVaultPath } from "@/lib/sample-mode";
 import { VaultContributionPanel } from "@/components/lumi/VaultContributionPanel";
@@ -111,6 +116,26 @@ export default function Home() {
   const inboxCandidates = inbox.state.status === "ready" ? inbox.state.candidates : [];
   const inboxProfile = inbox.state.status === "ready" ? inbox.state.profile : null;
 
+  // News & Signals: security news comes from every category's keywords combined,
+  // not just the selected one — this feed is cross-category by design.
+  const allKeywords = useMemo(
+    () => Array.from(new Set(categories.flatMap((category) => category.keywords))),
+    [categories],
+  );
+  const signalFeedState = useSignalFeed(allKeywords, sampleMode);
+  const signalFeedForNotifications = signalFeedState.status === "ready" ? signalFeedState.feed : null;
+  const notifications = useNotifications(signalFeedForNotifications, sampleMode);
+
+  function handleSelectNotification(item: NotificationItem) {
+    if (item.kind === "signal") {
+      setDockView("signals");
+      select(null);
+      return;
+    }
+    selectByFolder(item.topicKey);
+    setDockView("inbox");
+  }
+
   function removeProfileEntry(
     field: "expandedKeywords" | "importantAuthors" | "importantOrganizations" | "excludedTopics",
     value: string,
@@ -130,7 +155,19 @@ export default function Home() {
     >
       <AmbientBackground />
       <div className="relative z-10 flex flex-1 min-h-0 flex-col min-w-0">
-        <TopBar demoMode={sampleMode} />
+        <TopBar
+          demoMode={sampleMode}
+          onGoHome={() => {
+            setDockView("panorama");
+            select(null);
+          }}
+          notifications={{
+            items: notifications.items,
+            unreadCount: notifications.unreadCount,
+            onOpen: notifications.markSeen,
+            onSelectItem: handleSelectNotification,
+          }}
+        />
 
         {/* The page never scrolls. Each card is fixed to the column height and
             scrolls its own content instead. */}
@@ -174,6 +211,39 @@ export default function Home() {
                   candidates={inboxCandidates}
                   demo={sampleMode}
                   onRemoveEntry={sampleMode ? undefined : removeProfileEntry}
+                />
+              </div>
+            </div>
+          ) : dockView === "signals" ? (
+            /* ---- News & Signals: a read-only glance feed, not the Inbox triage screen ---- */
+            <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr_300px]">
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <LumiCard onOpenChat={() => setChatOpen(true)} />
+                <CategoryKeywordManager
+                  categories={categories}
+                  selected={null}
+                  onSelect={select}
+                  onAddCategory={addCategory}
+                  onRemoveCategory={removeCategory}
+                  onAddKeyword={addKeyword}
+                  onRemoveKeyword={removeKeyword}
+                  vaultConnected={vaultConnected}
+                  vaultFolders={folders}
+                  onOpenKnowledgeDB={() => setDockView("knowledge")}
+                />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <SignalFeedPanel hasKeywords={allKeywords.length > 0} state={signalFeedState} />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <SignalSummaryPanel
+                  summary={narrative?.signalSummary || null}
+                  loading={overview.loadingNarrative}
+                  error={overview.narrativeError ?? overview.error}
+                  canRun={canRunNarrative}
+                  onRun={overview.runNarrative}
                 />
               </div>
             </div>
@@ -249,15 +319,20 @@ export default function Home() {
                 />
               </div>
 
-              {/* Radar takes the upper two thirds; the two smaller cards share the row below. */}
+              {/* Radar and its stat card share the top row; the two smaller cards share the row below. */}
               <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
-                <div className="flex flex-[2] min-h-0 flex-col">
-                  <ResearchRadarPanel
-                    entries={metrics?.keywordRadar ?? []}
-                    explanations={narrative?.keywordRadar ?? []}
-                    windowDays={windowDays}
-                    onSelectTopic={selectByFolder}
-                  />
+                <div className="grid flex-[2] min-h-0 grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="flex flex-col min-w-0 min-h-0">
+                    <ResearchRadarPanel
+                      entries={metrics?.keywordRadar ?? []}
+                      explanations={narrative?.keywordRadar ?? []}
+                      windowDays={windowDays}
+                      onSelectTopic={selectByFolder}
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0 min-h-0">
+                    <CollectionStatsPanel newsCount={metrics?.securityNewsCount ?? 0} demo={sampleMode} />
+                  </div>
                 </div>
 
                 <div className="grid flex-1 min-h-0 grid-cols-1 sm:grid-cols-2 gap-5">
@@ -273,6 +348,7 @@ export default function Home() {
                     <ContinueResearchPanel
                       topics={metrics?.topics ?? []}
                       visits={visits}
+                      inboxCounts={inboxCounts}
                       onSelectTopic={selectByFolder}
                     />
                   </div>

@@ -1,4 +1,4 @@
-export type DockView = "panorama" | "trends" | "inbox" | "knowledge" | "settings" | "profile";
+export type DockView = "panorama" | "trends" | "inbox" | "signals" | "knowledge" | "settings" | "profile";
 
 type BottomDockProps = {
   activeView: DockView;
@@ -97,6 +97,26 @@ export function BottomDock({ activeView, onNavigate, inboxCount = 0 }: BottomDoc
           </span>
         )}
         {activeView === "inbox" && (
+          <span
+            className="absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+            style={{ background: "#c99a4b", boxShadow: "0 0 6px #c99a4b" }}
+          />
+        )}
+      </button>
+
+      {/* News & Signals — a read-only glance feed, not the Research Inbox triage screen. */}
+      <button
+        onClick={() => onNavigate("signals")}
+        style={activeView === "signals" ? ACTIVE_STYLE : undefined}
+        className="lumi-dock-btn relative w-[46px] h-[46px] rounded-2xl flex items-center justify-center"
+        title="News & Signals"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={strokeFor(activeView === "signals")} strokeWidth="2">
+          <path d="M4 11a9 9 0 0 1 9 9" />
+          <path d="M4 4a16 16 0 0 1 16 16" />
+          <circle cx="5" cy="19" r="1.5" fill={activeView === "signals" ? "#e8c07f" : "rgba(236,234,243,0.62)"} stroke="none" />
+        </svg>
+        {activeView === "signals" && (
           <span
             className="absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
             style={{ background: "#c99a4b", boxShadow: "0 0 6px #c99a4b" }}

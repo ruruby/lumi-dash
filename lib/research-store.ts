@@ -226,6 +226,31 @@ export type TopicCollectorStatus = {
  * profile view — every number here comes straight from stored records, never
  * estimated, per docs/decisions/derived-metrics-honesty.md.
  */
+export type CollectionSummary = {
+  papers: number;
+  organizations: number;
+  addedToWiki: number;
+  lastCollectedAt: number | null;
+};
+
+/**
+ * Cross-category totals for the "얼마나 모였는지" stat card next to Research
+ * Radar. Counts every stored candidate regardless of status, so it answers
+ * "how much has this app gathered" rather than "how much is unreviewed"
+ * (that is the Inbox badge's job).
+ */
+export async function getCollectionSummary(): Promise<CollectionSummary> {
+  const store = await readStore();
+  const lastRunTimes = Object.values(store.lastRuns);
+
+  return {
+    papers: store.candidates.filter((c) => c.sourceType === "paper").length,
+    organizations: store.candidates.filter((c) => c.sourceType === "organization").length,
+    addedToWiki: store.candidates.filter((c) => c.status === "added").length,
+    lastCollectedAt: lastRunTimes.length > 0 ? Math.max(...lastRunTimes) : null,
+  };
+}
+
 export async function getCollectorStatus(): Promise<TopicCollectorStatus[]> {
   const store = await readStore();
   const topicKeys = new Set<string>([...Object.keys(store.lastRuns), ...store.candidates.map((c) => c.topicKey)]);

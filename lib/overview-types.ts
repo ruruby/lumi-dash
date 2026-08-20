@@ -44,4 +44,6 @@ export type OverviewNarrative = {
   whatChanged: ChangeSummary[];
   securityIssues: SecurityIssue[];
   insights: LumiInsights;
+  /** One or two sentences on what's trending across the News & Signals feed. Empty when there's nothing to say. */
+  signalSummary: string;
 };

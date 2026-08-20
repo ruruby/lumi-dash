@@ -12,9 +12,9 @@ type LumiInsightsPanelProps = {
 
 const FIELDS: { key: keyof LumiInsights; label: string; color: string }[] = [
   { key: "emergingTopic", label: "Emerging Topic", color: "#8fd1a6" },
-  { key: "suggestedKeyword", label: "Suggested Keyword", color: "#e8c07f" },
+  { key: "newConnection", label: "Connection Found", color: "#a9bce4" },
   { key: "researchGap", label: "Research Gap", color: "#e6a3a3" },
-  { key: "newConnection", label: "New Connection", color: "#a9bce4" },
+  { key: "suggestedKeyword", label: "Suggested Keyword", color: "#e8c07f" },
 ];
 
 export function LumiInsightsPanel({ insights, loading, error, canRun, onRun }: LumiInsightsPanelProps) {
