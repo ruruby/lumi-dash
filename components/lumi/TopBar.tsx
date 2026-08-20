@@ -1,74 +1,19 @@
 import { ACCENT, SPACE_GROTESK } from "@/lib/lumi-theme";
 
-export function TopBar({ demoMode = false }: { demoMode?: boolean }) {
+type TopBarProps = { demoMode?: boolean; sampleAvailable?: boolean; onToggleDemo?: () => void };
+
+export function TopBar({ demoMode = false, sampleAvailable = false, onToggleDemo }: TopBarProps) {
   return (
-    <header
-      style={{
-        background: "rgba(12,15,30,0.35)",
-        backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(201,154,75,0.14)",
-      }}
-      className="relative flex items-center justify-between h-20 px-8 shrink-0"
-    >
-      <div
-        className="absolute bottom-[-1px] left-8"
-        style={{ width: 220, height: 2, background: "linear-gradient(90deg, #c99a4b, transparent)" }}
-      />
-
+    <header style={{ background: "rgba(12,15,30,0.35)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(201,154,75,0.14)" }} className="relative flex items-center justify-between h-20 px-8 shrink-0">
+      <div className="absolute bottom-[-1px] left-8" style={{ width: 220, height: 2, background: "linear-gradient(90deg, #c99a4b, transparent)" }} />
       <div className="flex items-center gap-4">
-        <div className="flex items-baseline gap-1.5">
-          <h1
-            style={{ fontFamily: SPACE_GROTESK, fontWeight: 700, fontSize: 19, letterSpacing: 0.5, color: "#fff" }}
-            className="m-0"
-          >
-            LUMI
-          </h1>
-          <span style={{ color: ACCENT, fontSize: 12 }}>✦</span>
-        </div>
+        <div className="flex items-baseline gap-1.5"><h1 style={{ fontFamily: SPACE_GROTESK, fontWeight: 700, fontSize: 19, letterSpacing: 0.5, color: "#fff" }} className="m-0">LUMI</h1><span style={{ color: ACCENT, fontSize: 12 }}>✦</span></div>
         <div style={{ width: 1, height: 26, background: "rgba(255,255,255,0.12)" }} />
-        <div className="flex flex-col gap-0.5">
-          <span
-            style={{
-              fontFamily: SPACE_GROTESK,
-              fontSize: 18,
-              fontWeight: 600,
-              color: ACCENT,
-              textShadow: "0 0 18px rgba(201,154,75,0.25)",
-            }}
-          >
-            Light Up My Insight
-          </span>
-          <span style={{ fontSize: 11.5, color: "rgba(236,234,243,0.45)" }}>
-            지식을 비추는 빛이 되어, 더 나은 기술적 결정을 돕습니다.
-          </span>
-        </div>
+        <div className="flex flex-col gap-0.5"><span style={{ fontFamily: SPACE_GROTESK, fontSize: 18, fontWeight: 600, color: ACCENT, textShadow: "0 0 18px rgba(201,154,75,0.25)" }}>Light Up My Insight</span><span style={{ fontSize: 11.5, color: "rgba(236,234,243,0.45)" }}>지식을 비추는 빛이 되어, 더 나은 기술적 결정을 돕습니다.</span></div>
       </div>
-
-      <div
-        className="w-[38px] h-[38px] rounded-full flex items-center justify-center relative"
-        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,154,75,0.2)" }}
-      >
-        {demoMode && (
-          <span className="absolute right-12 top-1/2 -translate-y-1/2 rounded-full border border-[#c99a4b]/40 bg-[#c99a4b]/15 px-2.5 py-1 text-[10px] font-bold text-[#f0d6a0]">
-            SAMPLE MODE · 데모 데이터
-          </span>
-        )}
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#eceaf3" strokeWidth="2">
-          <path d="M18 8a6 6 0 0 0-12 0c0 4-2 5-2 7h16c0-2-2-3-2-7" />
-          <path d="M10 21a2 2 0 0 0 4 0" />
-        </svg>
-        <span
-          className="absolute rounded-full"
-          style={{
-            top: 6,
-            right: 7,
-            width: 7,
-            height: 7,
-            background: ACCENT,
-            boxShadow: `0 0 6px ${ACCENT}`,
-            border: "1.5px solid #0c0f1e",
-          }}
-        />
+      <div className="absolute right-4 flex max-w-[calc(100%-2rem)] items-center gap-2 sm:right-8 sm:gap-3">
+        {sampleAvailable && onToggleDemo && <button type="button" onClick={onToggleDemo} aria-pressed={demoMode} aria-label={`SAMPLE MODE ${demoMode ? "끄기" : "켜기"}`} className="flex h-[30px] min-w-0 max-w-[calc(100vw-82px)] items-center gap-2 rounded-full border border-[#c99a4b]/40 bg-[#c99a4b]/10 px-2.5 text-[10px] font-bold text-[#f0d6a0]"><span className="hidden truncate sm:inline">SAMPLE MODE</span><span className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${demoMode ? "bg-[#c99a4b]" : "bg-white/20"}`}><span className={`absolute top-0.5 h-3 w-3 rounded-full transition-transform ${demoMode ? "translate-x-3.5 bg-[#fff4d9]" : "translate-x-0.5 bg-white/60"}`} /></span></button>}
+        <div className="w-[38px] h-[38px] rounded-full flex items-center justify-center relative" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,154,75,0.2)" }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#eceaf3" strokeWidth="2"><path d="M18 8a6 6 0 0 0-12 0c0 4-2 5-2 7h16c0-2-2-3-2-7" /><path d="M10 21a2 2 0 0 0 4 0" /></svg><span className="absolute rounded-full" style={{ top: 6, right: 7, width: 7, height: 7, background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`, border: "1.5px solid #0c0f1e" }} /></div>
       </div>
     </header>
   );

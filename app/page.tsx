@@ -27,6 +27,7 @@ import { isSampleVaultPath } from "@/lib/sample-mode";
 import { VaultContributionPanel } from "@/components/lumi/VaultContributionPanel";
 
 const EMPTY_KEYWORDS: string[] = [];
+const SAMPLE_MODE_STORAGE_KEY = "lumi.sampleMode";
 
 export default function Home() {
   const [chatOpen, setChatOpen] = useState(false);
@@ -45,7 +46,24 @@ export default function Home() {
   } = useCategories();
 
   const { vaultPath, setVaultPath, folders, rootError } = useVaultRoot();
-  const sampleMode = isSampleVaultPath(vaultPath);
+  const sampleAvailable = isSampleVaultPath(vaultPath);
+  const [sampleEnabled, setSampleEnabled] = useState(true);
+  useEffect(() => {
+    const stored = window.localStorage.getItem(SAMPLE_MODE_STORAGE_KEY);
+    // The preference is read once after hydration to avoid server/client markup drift.
+    if (stored !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSampleEnabled(stored === "on");
+    }
+  }, []);
+  const sampleMode = sampleAvailable && sampleEnabled;
+  function toggleSampleMode() {
+    setSampleEnabled((enabled) => {
+      const next = !enabled;
+      window.localStorage.setItem(SAMPLE_MODE_STORAGE_KEY, next ? "on" : "off");
+      return next;
+    });
+  }
   const vaultConnected = Boolean(vaultPath) && !rootError;
 
   const keywords = selected?.keywords ?? EMPTY_KEYWORDS;
@@ -60,7 +78,7 @@ export default function Home() {
     () => categories.map((c) => ({ name: c.name, folder: c.folder, keywords: c.keywords })),
     [categories],
   );
-  const overview = useOverview(vaultPath, overviewCategories, windowDays);
+  const overview = useOverview(vaultPath, overviewCategories, windowDays, sampleMode);
   const { visits, recordVisit } = useVisitLog();
 
   // Remember when each topic was opened, and how many notes it had then,
@@ -82,7 +100,7 @@ export default function Home() {
     >
       <AmbientBackground />
       <div className="relative z-10 flex flex-1 min-h-0 flex-col min-w-0">
-        <TopBar demoMode={sampleMode} />
+        <TopBar demoMode={sampleMode} sampleAvailable={sampleAvailable} onToggleDemo={toggleSampleMode} />
 
         {/* The page never scrolls. Each card is fixed to the column height and
             scrolls its own content instead. */}
@@ -113,6 +131,7 @@ export default function Home() {
                   vaultPath={vaultPath}
                   folder={vaultFolder}
                   vaultReady={vaultState.status === "ready" && vaultNoteCount > 0}
+                  demoMode={sampleMode}
                 />
               </div>
 
@@ -236,6 +255,7 @@ export default function Home() {
         vaultPath={vaultPath}
         vaultFolder={vaultFolder}
         vaultNoteCount={vaultNoteCount}
+        demoMode={sampleMode}
       />
       <BottomDock
         activeView={dockView}

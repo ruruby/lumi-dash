@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
   const categories = parseCategories(body.categories);
   const windowDays: number = Number.isFinite(body.windowDays) ? Math.max(1, Math.trunc(body.windowDays)) : 7;
   const withNarrative: boolean = body.withNarrative !== false;
+  const demoMode = body.demoMode === true;
 
   if (!vaultPath) {
     return NextResponse.json({ error: "먼저 Obsidian vault를 연결해주세요." }, { status: 400 });
@@ -48,10 +49,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!withNarrative) {
-    return NextResponse.json({ metrics, narrative: null, demo: isSampleVaultPath(vaultPath) });
+    return NextResponse.json({ metrics, narrative: null, demo: demoMode && isSampleVaultPath(vaultPath) });
   }
 
-  if (isSampleVaultPath(vaultPath)) {
+  if (demoMode && isSampleVaultPath(vaultPath)) {
     return NextResponse.json({ metrics, narrative: getSampleNarrative(metrics), demo: true });
   }
 

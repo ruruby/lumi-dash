@@ -17,12 +17,13 @@ export async function POST(request: NextRequest) {
 
   const vaultPath: string = typeof body.vaultPath === "string" ? body.vaultPath.trim() : "";
   const folder: string = typeof body.folder === "string" ? body.folder : "";
+  const demoMode = body.demoMode === true;
 
   if (!vaultPath) {
     return NextResponse.json({ error: "먼저 Obsidian vault를 연결해 주세요." }, { status: 400 });
   }
 
-  if (isSampleVaultPath(vaultPath)) {
+  if (demoMode && isSampleVaultPath(vaultPath)) {
     return NextResponse.json(getSampleTechProgress(folder));
   }
 

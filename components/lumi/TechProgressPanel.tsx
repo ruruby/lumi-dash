@@ -9,6 +9,7 @@ type TechProgressPanelProps = {
   vaultPath: string;
   folder: string;
   vaultReady: boolean;
+  demoMode?: boolean;
 };
 
 type AnalysisState =
@@ -17,7 +18,7 @@ type AnalysisState =
   | { status: "error"; message: string }
   | { status: "success"; result: TechProgressResult };
 
-export function TechProgressPanel({ vaultPath, folder, vaultReady }: TechProgressPanelProps) {
+export function TechProgressPanel({ vaultPath, folder, vaultReady, demoMode = false }: TechProgressPanelProps) {
   const [state, setState] = useState<AnalysisState>({ status: "idle" });
 
   async function handleAnalyze() {
@@ -26,7 +27,7 @@ export function TechProgressPanel({ vaultPath, folder, vaultReady }: TechProgres
       const response = await fetch("/api/tech-progress", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vaultPath, folder }),
+        body: JSON.stringify({ vaultPath, folder, demoMode }),
       });
       const data = await response.json();
       if (!response.ok) {

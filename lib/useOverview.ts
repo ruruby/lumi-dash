@@ -23,7 +23,7 @@ const INITIAL: OverviewState = {
   error: null,
 };
 
-export function useOverview(vaultPath: string, categories: OverviewCategory[], windowDays: number) {
+export function useOverview(vaultPath: string, categories: OverviewCategory[], windowDays: number, demoMode = false) {
   const [state, setState] = useState<OverviewState>(INITIAL);
 
   // Categories arrive as a fresh array each render; key on content so the metrics
@@ -51,7 +51,7 @@ export function useOverview(vaultPath: string, categories: OverviewCategory[], w
         const response = await fetch("/api/overview", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ vaultPath, categories, windowDays, withNarrative }),
+          body: JSON.stringify({ vaultPath, categories, windowDays, withNarrative, demoMode }),
         });
         const data = await response.json();
 
@@ -73,7 +73,7 @@ export function useOverview(vaultPath: string, categories: OverviewCategory[], w
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [vaultPath, signature, windowDays],
+    [vaultPath, signature, windowDays, demoMode],
   );
 
   // Numbers are cheap and honest, so they load on their own; the AI pass is opt-in.

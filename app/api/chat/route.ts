@@ -23,12 +23,13 @@ export async function POST(request: NextRequest) {
   const source: "wiki" | "news" = body.source === "news" ? "news" : "wiki";
   const history: ChatMessage[] = Array.isArray(body.history) ? body.history : [];
   const vaultPath: string = typeof body.vaultPath === "string" ? body.vaultPath.trim() : "";
+  const demoMode = body.demoMode === true;
 
   if (history.length === 0) {
     return NextResponse.json({ error: "질문 내용이 비어 있어요." }, { status: 400 });
   }
 
-  if (isSampleVaultPath(vaultPath)) {
+  if (demoMode && isSampleVaultPath(vaultPath)) {
     return NextResponse.json({
       reply: getSampleChatReply(source, history[history.length - 1]?.content ?? ""),
       demo: true,

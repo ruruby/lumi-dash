@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import type { NewsResult } from "@/lib/useCategoryNews";
-import { isSampleVaultPath } from "@/lib/sample-mode";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 type ChatSource = "wiki" | "news";
@@ -16,6 +15,7 @@ type ChatModalProps = {
   vaultPath: string;
   vaultFolder: string;
   vaultNoteCount: number;
+  demoMode?: boolean;
 };
 
 export function ChatModal({
@@ -26,6 +26,7 @@ export function ChatModal({
   vaultPath,
   vaultFolder,
   vaultNoteCount,
+  demoMode = false,
 }: ChatModalProps) {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [source, setSource] = useState<ChatSource>("wiki");
@@ -37,7 +38,7 @@ export function ChatModal({
 
   useEffect(() => {
     if (!open) return;
-    if (isSampleVaultPath(vaultPath)) {
+    if (demoMode) {
       setAvailable(true);
       return;
     }
@@ -45,7 +46,7 @@ export function ChatModal({
       .then((res) => res.json())
       .then((data) => setAvailable(Boolean(data.available)))
       .catch(() => setAvailable(false));
-  }, [open, vaultPath]);
+  }, [open, demoMode, vaultPath]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -77,6 +78,7 @@ export function ChatModal({
           vaultPath,
           folder: vaultFolder,
           categoryName,
+          demoMode,
           newsContext: newsItems.map((item) => ({
             title: item.title,
             summary: item.summary,
