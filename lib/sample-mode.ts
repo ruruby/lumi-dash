@@ -40,6 +40,19 @@ export function getSampleNarrative(metrics: OverviewMetrics): OverviewNarrative 
         ? "코딩 에이전트와 관측성 노트가 연결되며 실행과 검증 중심의 도구 흐름이 보입니다."
         : "에이전트, RAG, 평가 노트가 연결되며 모델 자체보다 시스템 품질을 함께 보는 흐름이 보입니다.",
     })),
+    // Grounded in the same real keyword-radar entries the AI pass would receive,
+    // so the demo "why" always matches a keyword that actually surfaced. Sample
+    // news titles already carry their own "[샘플]" tag, so it is stripped here
+    // to avoid doubling up with this line's own prefix.
+    keywordRadar: metrics.keywordRadar.map((entry) => {
+      const title = entry.sampleTitles[0]?.replace(/^\[샘플\]\s*/, "");
+      return {
+        keyword: entry.keyword,
+        why: title
+          ? `[샘플] "${title}" 등 최근 자료에서 다뤄지며 부각되고 있습니다.`
+          : `[샘플] 최근 ${entry.recentCount}건의 자료에서 언급되며 부각되고 있습니다.`,
+      };
+    }),
     whatChanged: metrics.topics.map((topic) => ({
       topic: topic.topic,
       summary: topic.topic.includes("도구")

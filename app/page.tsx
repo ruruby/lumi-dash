@@ -253,8 +253,8 @@ export default function Home() {
               <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
                 <div className="flex flex-[2] min-h-0 flex-col">
                   <ResearchRadarPanel
-                    topics={metrics?.topics ?? []}
-                    explanations={narrative?.radar ?? []}
+                    entries={metrics?.keywordRadar ?? []}
+                    explanations={narrative?.keywordRadar ?? []}
                     windowDays={windowDays}
                     onSelectTopic={selectByFolder}
                   />
@@ -301,8 +301,8 @@ export default function Home() {
               <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
                 <ResearchRadarPanel
                   variant="strip"
-                  topics={metrics?.topics ?? []}
-                  explanations={narrative?.radar ?? []}
+                  entries={metrics?.keywordRadar ?? []}
+                  explanations={narrative?.keywordRadar ?? []}
                   windowDays={windowDays}
                   onSelectTopic={selectByFolder}
                   onOpenFull={() => setDockView("trends")}

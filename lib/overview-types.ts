@@ -1,4 +1,5 @@
 import type { TopicMetrics } from "@/lib/trend-metrics";
+import type { KeywordRadarEntry } from "@/lib/keyword-radar";
 
 export type TopicMapNode = {
   topic: string;
@@ -14,9 +15,12 @@ export type OverviewMetrics = {
   topicMap: TopicMapNode[];
   /** Security-relevant news gathered across all categories, newest first. */
   securityNewsCount: number;
+  /** Research Radar's keyword-level view — real mention counts, ranked by frequency. */
+  keywordRadar: KeywordRadarEntry[];
 };
 
 export type RadarExplanation = { topic: string; why: string };
+export type KeywordExplanation = { keyword: string; why: string };
 export type ChangeSummary = { topic: string; summary: string };
 export type SecurityIssue = {
   title: string;
@@ -36,6 +40,7 @@ export type LumiInsights = {
 /** The single AI pass over everything above. */
 export type OverviewNarrative = {
   radar: RadarExplanation[];
+  keywordRadar: KeywordExplanation[];
   whatChanged: ChangeSummary[];
   securityIssues: SecurityIssue[];
   insights: LumiInsights;

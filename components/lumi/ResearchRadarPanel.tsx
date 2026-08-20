@@ -1,11 +1,19 @@
 import { GlassPanel } from "@/components/lumi/GlassPanel";
 import { TEXT_FAINT, TEXT_MUTED } from "@/lib/lumi-theme";
-import type { TopicMetrics, TopicStatus } from "@/lib/trend-metrics";
-import type { RadarExplanation } from "@/lib/overview-types";
+import type { TopicStatus } from "@/lib/trend-metrics";
+import type { KeywordExplanation } from "@/lib/overview-types";
+import type { KeywordRadarEntry } from "@/lib/keyword-radar";
 
+/**
+ * 지금 주목할 기술 — one row per keyword mentioned across the user's
+ * categories, not one row per category. Ranked by how often it was actually
+ * mentioned recently (real notes, news, and Research Collector candidates),
+ * so "emphasis" comes from frequency rather than a forced percentage —
+ * see docs/decisions/derived-metrics-honesty.md.
+ */
 type ResearchRadarPanelProps = {
-  topics: TopicMetrics[];
-  explanations: RadarExplanation[];
+  entries: KeywordRadarEntry[];
+  explanations: KeywordExplanation[];
   windowDays: number;
   onSelectTopic: (folder: string) => void;
   /** "strip" is the condensed main-screen version: chips only, no explanations. */
@@ -24,24 +32,22 @@ function formatTrend(percent: number | null): string {
   if (percent === null) return "—";
   if (percent > 0) return `↑ ${percent}%`;
   if (percent < 0) return `↓ ${Math.abs(percent)}%`;
-  return "→ 0%";
+  return "→";
 }
 
 export function ResearchRadarPanel({
-  topics,
+  entries,
   explanations,
   windowDays,
   onSelectTopic,
   variant = "full",
   onOpenFull,
 }: ResearchRadarPanelProps) {
-  const explanationByTopic = new Map(explanations.map((e) => [e.topic, e.why]));
+  const whyByKeyword = new Map(explanations.map((e) => [e.keyword, e.why]));
 
   if (variant === "strip") {
-    // Sort so the topics that are actually moving surface first.
-    const ordered = [...topics].sort(
-      (a, b) => (b.trendPercent ?? -Infinity) - (a.trendPercent ?? -Infinity),
-    );
+    // Already ranked by mention frequency; keep that order so the busiest keywords lead.
+    const ordered = entries;
 
     return (
       <GlassPanel className="w-full" hoverable cornerColor="#c99a4b">
@@ -56,23 +62,23 @@ export function ResearchRadarPanel({
 
         {ordered.length === 0 ? (
           <p className="text-[12.5px]" style={{ color: TEXT_MUTED }}>
-            카테고리를 만들면 관심 기술의 추세를 보여드려요.
+            카테고리에 키워드를 등록하면 지금 주목할 기술을 보여드려요.
           </p>
         ) : (
           <div className="flex flex-wrap gap-1.5">
-            {ordered.map((topic) => {
-              const style = STATUS_STYLE[topic.status];
+            {ordered.map((entry) => {
+              const style = STATUS_STYLE[entry.status];
               return (
                 <button
-                  key={topic.folder + topic.topic}
-                  onClick={() => onSelectTopic(topic.folder)}
+                  key={entry.keyword}
+                  onClick={() => entry.topicKeys[0] && onSelectTopic(entry.topicKeys[0])}
                   style={{ background: style.bg, border: `1px solid ${style.border}` }}
                   className="rounded-full px-2.5 py-1 flex items-center gap-1.5"
                 >
                   <span style={{ fontSize: 10 }}>{style.icon}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#eceaf3" }}>{topic.topic}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#eceaf3" }}>{entry.keyword}</span>
                   <span style={{ fontSize: 10, fontWeight: 700, color: style.color }}>
-                    {formatTrend(topic.trendPercent)}
+                    {formatTrend(entry.trendPercent)}
                   </span>
                 </button>
               );
@@ -87,22 +93,22 @@ export function ResearchRadarPanel({
     <GlassPanel className="w-full" fill hoverable cornerColor="#c99a4b">
       <div className="flex items-center justify-between mb-1">
         <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff" }}>Research Radar</div>
-        <span style={{ fontSize: 10.5, color: TEXT_FAINT }}>최근 {windowDays}일 · 직전 동기간 대비</span>
+        <span style={{ fontSize: 10.5, color: TEXT_FAINT }}>최근 {windowDays}일 · 언급 빈도순</span>
       </div>
 
-      {topics.length === 0 ? (
+      {entries.length === 0 ? (
         <p className="mt-4 text-[12.5px]" style={{ color: TEXT_MUTED }}>
-          카테고리를 만들면 관심 기술의 추세를 보여드려요.
+          카테고리에 키워드를 등록하면 지금 주목할 기술을 보여드려요.
         </p>
       ) : (
         <div className="mt-2 flex flex-col gap-2">
-          {topics.map((topic) => {
-            const style = STATUS_STYLE[topic.status];
-            const why = explanationByTopic.get(topic.topic);
+          {entries.map((entry) => {
+            const style = STATUS_STYLE[entry.status];
+            const why = whyByKeyword.get(entry.keyword);
             return (
               <div
-                key={topic.folder + topic.topic}
-                onClick={() => onSelectTopic(topic.folder)}
+                key={entry.keyword}
+                onClick={() => entry.topicKeys[0] && onSelectTopic(entry.topicKeys[0])}
                 style={{ background: style.bg, border: `1px solid ${style.border}` }}
                 className="cursor-pointer rounded-xl px-3 py-2.5"
               >
@@ -110,17 +116,18 @@ export function ResearchRadarPanel({
                   <span className="flex items-center gap-1.5 min-w-0">
                     <span style={{ fontSize: 11 }}>{style.icon}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: "#eceaf3" }} className="truncate">
-                      {topic.topic}
+                      {entry.keyword}
                     </span>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: style.color }}>{topic.status}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: style.color }}>{entry.status}</span>
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: style.color }} className="shrink-0">
-                    {formatTrend(topic.trendPercent)}
+                    {formatTrend(entry.trendPercent)}
                   </span>
                 </div>
                 <div style={{ fontSize: 9.5, color: TEXT_FAINT }} className="mt-1">
-                  노트 {topic.recentNotes} · 뉴스 {topic.recentNews}
-                  {topic.trendPercent === null && " · 비교할 직전 자료 없음"}
+                  최근 언급 {entry.recentCount}건
+                  {entry.priorCount > 0 && ` · 직전 ${entry.priorCount}건`}
+                  {entry.topicKeys.length > 0 && ` · ${entry.topicKeys.join(", ")}`}
                 </div>
                 {why && (
                   <div style={{ fontSize: 10.5, color: "rgba(236,234,243,0.6)" }} className="mt-1.5 leading-snug">
