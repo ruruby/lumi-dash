@@ -15,17 +15,18 @@ export type VaultState =
   | { status: "ready"; notes: VaultGraphNote[]; truncated: boolean; totalFound: number };
 
 const STORAGE_KEY = "lumi.vaultPath";
+const DEFAULT_VAULT_PATH = "sample_vault";
 
 /** The vault root is global and set once; folders inside it are picked per category. */
 export function useVaultRoot() {
-  const [vaultPath, setVaultPathState] = useState<string>("");
+  const [vaultPath, setVaultPathState] = useState<string>(DEFAULT_VAULT_PATH);
   const [hydrated, setHydrated] = useState(false);
   const [folders, setFolders] = useState<string[]>([]);
   const [rootError, setRootError] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) setVaultPathState(saved);
+    if (saved !== null) setVaultPathState(saved);
     setHydrated(true);
   }, []);
 

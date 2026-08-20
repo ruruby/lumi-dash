@@ -7,10 +7,11 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-test("홈 화면은 LUMI 브랜드와 카테고리 추가 입력창을 보여준다", () => {
+test("홈 화면은 LUMI 브랜드와 기본 샘플 카테고리를 보여준다", () => {
   render(<Home />);
 
   expect(screen.getByRole("heading", { level: 1, name: "LUMI" })).toBeInTheDocument();
   expect(screen.getByPlaceholderText("카테고리 추가...")).toBeInTheDocument();
-  expect(screen.getByText("아직 카테고리가 없어요. 위에서 하나 추가해보세요.")).toBeInTheDocument();
+  expect(screen.getByText("LLM 핵심 기술")).toBeInTheDocument();
+  expect(screen.getByText("LLM 개발 도구")).toBeInTheDocument();
 });

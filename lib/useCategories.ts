@@ -12,12 +12,27 @@ export type Category = {
 
 const STORAGE_KEY = "lumi.categories";
 
+const DEFAULT_CATEGORIES: Category[] = [
+  {
+    id: "sample-llm-core",
+    name: "LLM 핵심 기술",
+    folder: "LLM 핵심 기술",
+    keywords: ["large language model", "RAG", "LLM agent", "multimodal LLM"],
+  },
+  {
+    id: "sample-llm-tools",
+    name: "LLM 개발 도구",
+    folder: "LLM 개발 도구",
+    keywords: ["LLM developer tools", "AI coding agent", "LangGraph", "LLM observability"],
+  },
+];
+
 function createId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Math.random()}`;
 }
 
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
