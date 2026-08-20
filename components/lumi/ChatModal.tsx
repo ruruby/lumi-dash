@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import type { NewsResult } from "@/lib/useCategoryNews";
+import { isSampleVaultPath } from "@/lib/sample-mode";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 type ChatSource = "wiki" | "news";
@@ -36,11 +37,15 @@ export function ChatModal({
 
   useEffect(() => {
     if (!open) return;
+    if (isSampleVaultPath(vaultPath)) {
+      setAvailable(true);
+      return;
+    }
     fetch("/api/chat")
       .then((res) => res.json())
       .then((data) => setAvailable(Boolean(data.available)))
       .catch(() => setAvailable(false));
-  }, [open]);
+  }, [open, vaultPath]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });

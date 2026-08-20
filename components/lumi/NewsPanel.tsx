@@ -33,7 +33,9 @@ export function NewsPanel({ categoryName, hasKeywords, state }: NewsPanelProps) 
         <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff" }}>
           {categoryName ? `${categoryName} 관련 뉴스` : "관련 뉴스"}
         </div>
-        <span style={{ fontSize: 10.5, color: TEXT_FAINT }}>Google 뉴스 · 자동 수집</span>
+        <span style={{ fontSize: 10.5, color: TEXT_FAINT }}>
+          {state.status === "success" && state.demo ? "샘플 뉴스 · 데모 데이터" : "Google 뉴스 · 자동 수집"}
+        </span>
       </div>
 
       {!categoryName && (

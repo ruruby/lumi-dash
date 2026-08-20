@@ -10,4 +10,5 @@ export type TechProgressItem = {
 export type TechProgressResult = {
   overview: string;
   items: TechProgressItem[];
+  demo?: boolean;
 };

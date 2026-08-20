@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getSampleNews } from "@/lib/sample-mode";
 
 export type NewsResult = {
   title: string;
@@ -14,14 +15,19 @@ export type NewsFetchState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "success"; items: NewsResult[] };
+  | { status: "success"; items: NewsResult[]; demo?: boolean };
 
-export function useCategoryNews(keywords: string[]): NewsFetchState {
+export function useCategoryNews(keywords: string[], demo = false): NewsFetchState {
   const [state, setState] = useState<NewsFetchState>({ status: "idle" });
 
   useEffect(() => {
     if (keywords.length === 0) {
       setState({ status: "idle" });
+      return;
+    }
+
+    if (demo) {
+      setState({ status: "success", items: getSampleNews(keywords), demo: true });
       return;
     }
 
@@ -46,7 +52,7 @@ export function useCategoryNews(keywords: string[]): NewsFetchState {
     return () => {
       cancelled = true;
     };
-  }, [keywords]);
+  }, [keywords, demo]);
 
   return state;
 }

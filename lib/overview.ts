@@ -8,6 +8,7 @@ import type {
   SecurityIssue,
   TopicMapNode,
 } from "@/lib/overview-types";
+import { getSampleNews, isSampleVaultPath } from "@/lib/sample-mode";
 
 export type OverviewCategoryInput = {
   name: string;
@@ -39,7 +40,17 @@ async function gatherTopic(
   const [vaultResult, news] = await Promise.all([
     readVault(vaultPath, category.folder).catch(() => ({ notes: [], truncated: false, totalFound: 0 })),
     category.keywords.length > 0
-      ? fetchNewsForKeywords(category.keywords).catch(() => [] as NewsItem[])
+      ? isSampleVaultPath(vaultPath)
+        ? Promise.resolve(
+            getSampleNews(category.keywords).map((item) => ({
+              title: item.title,
+              link: item.link,
+              pubDate: item.pubDate,
+              source: item.source,
+              snippet: item.summary,
+            })),
+          )
+        : fetchNewsForKeywords(category.keywords).catch(() => [] as NewsItem[])
       : Promise.resolve([] as NewsItem[]),
   ]);
 

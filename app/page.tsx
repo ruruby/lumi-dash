@@ -23,6 +23,7 @@ import { useCategories } from "@/lib/useCategories";
 import { useOverview } from "@/lib/useOverview";
 import { useVisitLog } from "@/lib/useVisitLog";
 import { MANROPE, PAGE_BACKGROUND, TEXT } from "@/lib/lumi-theme";
+import { isSampleVaultPath } from "@/lib/sample-mode";
 
 const EMPTY_KEYWORDS: string[] = [];
 
@@ -43,10 +44,11 @@ export default function Home() {
   } = useCategories();
 
   const { vaultPath, setVaultPath, folders, rootError } = useVaultRoot();
+  const sampleMode = isSampleVaultPath(vaultPath);
   const vaultConnected = Boolean(vaultPath) && !rootError;
 
   const keywords = selected?.keywords ?? EMPTY_KEYWORDS;
-  const newsState = useCategoryNews(keywords);
+  const newsState = useCategoryNews(keywords, sampleMode);
   const newsItems = newsState.status === "success" ? newsState.items : [];
 
   const vaultFolder = selected?.folder ?? "";
@@ -79,7 +81,7 @@ export default function Home() {
     >
       <AmbientBackground />
       <div className="relative z-10 flex flex-1 min-h-0 flex-col min-w-0">
-        <TopBar />
+        <TopBar demoMode={sampleMode} />
 
         {/* The page never scrolls. Each card is fixed to the column height and
             scrolls its own content instead. */}

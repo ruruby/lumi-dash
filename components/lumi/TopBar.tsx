@@ -1,6 +1,6 @@
 import { ACCENT, SPACE_GROTESK } from "@/lib/lumi-theme";
 
-export function TopBar() {
+export function TopBar({ demoMode = false }: { demoMode?: boolean }) {
   return (
     <header
       style={{
@@ -48,6 +48,11 @@ export function TopBar() {
         className="w-[38px] h-[38px] rounded-full flex items-center justify-center relative"
         style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,154,75,0.2)" }}
       >
+        {demoMode && (
+          <span className="absolute right-12 top-1/2 -translate-y-1/2 rounded-full border border-[#c99a4b]/40 bg-[#c99a4b]/15 px-2.5 py-1 text-[10px] font-bold text-[#f0d6a0]">
+            SAMPLE MODE · 데모 데이터
+          </span>
+        )}
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#eceaf3" strokeWidth="2">
           <path d="M18 8a6 6 0 0 0-12 0c0 4-2 5-2 7h16c0-2-2-3-2-7" />
           <path d="M10 21a2 2 0 0 0 4 0" />

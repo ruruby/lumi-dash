@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { computeOverviewMetrics, generateOverviewNarrative, type OverviewCategoryInput } from "@/lib/overview";
 import { isLocalClaudeCliAvailable } from "@/lib/local-claude-cli";
+import { getSampleNarrative, isSampleVaultPath } from "@/lib/sample-mode";
 
 function parseCategories(value: unknown): OverviewCategoryInput[] {
   if (!Array.isArray(value)) return [];
@@ -47,7 +48,11 @@ export async function POST(request: NextRequest) {
   }
 
   if (!withNarrative) {
-    return NextResponse.json({ metrics, narrative: null });
+    return NextResponse.json({ metrics, narrative: null, demo: isSampleVaultPath(vaultPath) });
+  }
+
+  if (isSampleVaultPath(vaultPath)) {
+    return NextResponse.json({ metrics, narrative: getSampleNarrative(metrics), demo: true });
   }
 
   if (!(await isLocalClaudeCliAvailable())) {

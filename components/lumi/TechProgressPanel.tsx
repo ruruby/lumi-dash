@@ -81,6 +81,11 @@ export function TechProgressPanel({ vaultPath, folder, vaultReady }: TechProgres
 
       {state.status === "success" && (
         <>
+          {state.result.demo && (
+            <span className="mt-2 self-start rounded-full border border-[#c99a4b]/35 bg-[#c99a4b]/10 px-2 py-1 text-[9.5px] font-bold text-[#e8c07f]">
+              SAMPLE · 데모 분석
+            </span>
+          )}
           <div className="flex flex-col gap-3.5 mt-3">
             {state.result.items.map((item, index) => {
               const filled = TECH_STAGES.indexOf(item.stage) + 1;
