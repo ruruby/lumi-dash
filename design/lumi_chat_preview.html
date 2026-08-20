@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: 'Manrope', system-ui, sans-serif; }
+    .glass {
+      background: linear-gradient(160deg, rgba(45,54,92,0.42), rgba(20,24,46,0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(201,154,75,0.18);
+      border-radius: 18px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 18px 40px rgba(3,5,14,0.35);
+      position: relative;
+    }
+    .bubble-ai{ background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:14px 14px 14px 4px; padding:11px 14px; font-size:12.5px; line-height:1.55; color:#eceaf3; max-width:88%; }
+    .bubble-me{ background:linear-gradient(135deg, rgba(201,154,75,0.28), rgba(201,154,75,0.14)); border:1px solid rgba(201,154,75,0.35); border-radius:14px 14px 4px 14px; padding:11px 14px; font-size:12.5px; line-height:1.55; color:#f5efe3; max-width:80%; align-self:flex-end; }
+  </style>
+</head>
+<body>
+<div style="--accent: #c99a4b; width: 100%; min-height: 100vh; position: relative; overflow: hidden; background: linear-gradient(165deg, #080a15 0%, #0c1024 45%, #0a0d1c 100%); display:flex; align-items:center; justify-content:center; font-family:'Manrope',sans-serif;">
+
+  <!-- dimmed dashboard hint behind the modal -->
+  <div style="position:absolute; inset:0; opacity:0.35; background: radial-gradient(1100px 600px at 82% -8%, rgba(201,154,75,0.16), transparent 60%), radial-gradient(900px 700px at -6% 30%, rgba(90,110,150,0.22), transparent 60%);"></div>
+  <div style="position:absolute; inset:0; background:rgba(4,5,12,0.55); backdrop-filter: blur(3px);"></div>
+
+  <!-- CHAT MODAL (opens when the LUMI card's "LUMI 호출" button is pressed) -->
+  <div class="glass" style="position:relative; z-index:2; width:840px; height:560px; display:flex; overflow:hidden; border-color:rgba(201,154,75,0.32); box-shadow:0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,154,75,0.15);">
+
+    <!-- LEFT: big LUMI character -->
+    <div style="width:300px; flex-shrink:0; background:rgb(237,235,233); border-right:1px solid rgba(201,154,75,0.2); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; position:relative;">
+      <img src="../public/lumi/lumi_logo_chat.png" alt="LUMI" style="position:relative; width:210px; height:auto; object-fit:contain;">
+      <div style="position:absolute; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(201,154,75,0.32), transparent 68%); filter:blur(6px); mix-blend-mode:screen; pointer-events:none;"></div>
+      <div style="position:relative; margin-top:14px; text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#2b2620;">LUMI</div>
+        <div style="font-size:11px; color:rgba(43,38,32,0.6); margin-top:3px;">지식 DB 기반 특화 어시스턴트</div>
+        <div style="display:inline-flex; align-items:center; gap:5px; margin-top:10px; font-size:10px; color:#3f8a5c; background:rgba(95,168,118,0.16); border:1px solid rgba(95,168,118,0.35); padding:4px 10px; border-radius:20px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#3f8a5c;"></span>1,284건 문서 연결됨
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: chat column -->
+    <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+      <div style="height:56px; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:space-between; padding:0 20px;">
+        <span style="font-size:13px; font-weight:700; color:#fff;">LUMI와 대화하기</span>
+        <span style="font-size:16px; color:rgba(236,234,243,0.4);">✕</span>
+      </div>
+
+      <div style="flex:1; padding:20px; display:flex; flex-direction:column; gap:12px; overflow:hidden;">
+        <div class="bubble-ai">안녕하세요! 저는 LUMI예요 <span style="color:var(--accent);">✦</span> 관심 키워드와 최근 리포트를 기반으로 답변해 드릴게요. 무엇이 궁금하세요?</div>
+        <div class="bubble-me">최근 SBOM 규제 변화 요약해줘</div>
+        <div class="bubble-ai">최근 4주간 SBOM 관련 규제 동향을 정리했어요 <span style="color:var(--accent);">✦</span><br><br>1. EU CRA 세부 가이드라인 확정 — 공급망 SBOM 제출 의무화<br>2. NIST SP 800-218 업데이트 — 자동화 SBOM 검증 권고<br>3. 국내 K-SBOM 시범사업 3개 프로젝트 문서 갱신<br><br>연결된 리포트 3건을 아래에서 확인할 수 있어요.</div>
+      </div>
+
+      <div style="padding:14px 18px; border-top:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:10px;">
+        <div style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(201,154,75,0.25); border-radius:12px; padding:10px 14px; font-size:12px; color:rgba(236,234,243,0.4);">궁금한 내용을 물어보세요</div>
+        <div style="width:36px; height:36px; border-radius:50%; background:radial-gradient(circle at 32% 28%, #f0d6a0, #c99a4b 70%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0c0f1e" stroke-width="2.4"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

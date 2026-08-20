@@ -1,69 +1,245 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { TopBar } from "@/components/lumi/TopBar";
+import { CategoryKeywordManager } from "@/components/lumi/CategoryKeywordManager";
+import { NewsPanel } from "@/components/lumi/NewsPanel";
+import { ResearchGraphPanel } from "@/components/lumi/ResearchGraphPanel";
+import { TechProgressPanel } from "@/components/lumi/TechProgressPanel";
+import { ResearchRadarPanel } from "@/components/lumi/ResearchRadarPanel";
+import { TrendPanoramaPanel } from "@/components/lumi/TrendPanoramaPanel";
+import { WhatChangedPanel } from "@/components/lumi/WhatChangedPanel";
+import { SecurityIssuesPanel } from "@/components/lumi/SecurityIssuesPanel";
+import { LumiInsightsPanel } from "@/components/lumi/LumiInsightsPanel";
+import { ContinueResearchPanel } from "@/components/lumi/ContinueResearchPanel";
+import { KnowledgeBrowser } from "@/components/lumi/KnowledgeBrowser";
+import { LumiCard } from "@/components/lumi/LumiCard";
+import { ChatModal } from "@/components/lumi/ChatModal";
+import { AmbientBackground } from "@/components/lumi/AmbientBackground";
+import { BottomDock, type DockView } from "@/components/lumi/BottomDock";
+import { useCategoryNews } from "@/lib/useCategoryNews";
+import { useVaultRoot, useVaultNotes } from "@/lib/useVault";
+import { useCategories } from "@/lib/useCategories";
+import { useOverview } from "@/lib/useOverview";
+import { useVisitLog } from "@/lib/useVisitLog";
+import { MANROPE, PAGE_BACKGROUND, TEXT } from "@/lib/lumi-theme";
+
+const EMPTY_KEYWORDS: string[] = [];
 
 export default function Home() {
+  const [chatOpen, setChatOpen] = useState(false);
+  const [windowDays, setWindowDays] = useState(7);
+  const [dockView, setDockView] = useState<DockView>("panorama");
+
+  const {
+    categories,
+    selected,
+    select,
+    selectByFolder,
+    addCategory,
+    removeCategory,
+    addKeyword,
+    removeKeyword,
+  } = useCategories();
+
+  const { vaultPath, setVaultPath, folders, rootError } = useVaultRoot();
+  const vaultConnected = Boolean(vaultPath) && !rootError;
+
+  const keywords = selected?.keywords ?? EMPTY_KEYWORDS;
+  const newsState = useCategoryNews(keywords);
+  const newsItems = newsState.status === "success" ? newsState.items : [];
+
+  const vaultFolder = selected?.folder ?? "";
+  const vaultState = useVaultNotes(vaultPath, selected ? vaultFolder : null);
+  const vaultNoteCount = vaultState.status === "ready" ? vaultState.notes.length : 0;
+
+  const overviewCategories = useMemo(
+    () => categories.map((c) => ({ name: c.name, folder: c.folder, keywords: c.keywords })),
+    [categories],
+  );
+  const overview = useOverview(vaultPath, overviewCategories, windowDays);
+  const { visits, recordVisit } = useVisitLog();
+
+  // Remember when each topic was opened, and how many notes it had then,
+  // so Continue Research can show a real "new since last visit" delta.
+  useEffect(() => {
+    if (selected && vaultState.status === "ready") {
+      recordVisit(selected.folder, vaultState.notes.length);
+    }
+  }, [selected, vaultState, recordVisit]);
+
+  const metrics = overview.metrics;
+  const narrative = overview.narrative;
+  const canRunNarrative = Boolean(vaultPath) && categories.length > 0;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div
+      style={{ fontFamily: MANROPE, background: PAGE_BACKGROUND, color: TEXT }}
+      className="relative flex flex-1 flex-col h-full min-h-0 overflow-hidden"
+    >
+      <AmbientBackground />
+      <div className="relative z-10 flex flex-1 min-h-0 flex-col min-w-0">
+        <TopBar />
+
+        {/* The page never scrolls. Each card is fixed to the column height and
+            scrolls its own content instead. */}
+        <main className="flex-1 min-h-0 overflow-hidden px-8 py-8 pb-24">
+          {selected ? (
+            /* ---- Detail: one technology in depth ---- */
+            <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr_300px]">
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <LumiCard onOpenChat={() => setChatOpen(true)} />
+                <CategoryKeywordManager
+                  categories={categories}
+                  selected={selected}
+                  onSelect={select}
+                  onAddCategory={addCategory}
+                  onRemoveCategory={removeCategory}
+                  onAddKeyword={addKeyword}
+                  onRemoveKeyword={removeKeyword}
+                  vaultConnected={vaultConnected}
+                  vaultFolders={folders}
+                  onOpenKnowledgeDB={() => setDockView("knowledge")}
+                />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <ResearchGraphPanel state={vaultState} vaultPath={vaultPath} folder={vaultFolder} />
+                <TechProgressPanel
+                  key={`${vaultPath}::${vaultFolder}`}
+                  vaultPath={vaultPath}
+                  folder={vaultFolder}
+                  vaultReady={vaultState.status === "ready" && vaultNoteCount > 0}
+                />
+              </div>
+
+              <div className="flex flex-col min-w-0 h-full min-h-0">
+                <NewsPanel
+                  categoryName={selected.name}
+                  hasKeywords={keywords.length > 0}
+                  state={newsState}
+                />
+              </div>
+            </div>
+          ) : dockView === "knowledge" ? (
+            /* ---- Knowledge: browse the vault's raw files directly ---- */
+            <KnowledgeBrowser vaultPath={vaultPath} onChangeVaultPath={setVaultPath} vaultRootError={rootError} />
+          ) : dockView === "trends" ? (
+            /* ---- Trends: the time-and-activity view behind the dock's trend icon ---- */
+            <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr]">
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <LumiCard onOpenChat={() => setChatOpen(true)} />
+                <CategoryKeywordManager
+                  categories={categories}
+                  selected={null}
+                  onSelect={select}
+                  onAddCategory={addCategory}
+                  onRemoveCategory={removeCategory}
+                  onAddKeyword={addKeyword}
+                  onRemoveKeyword={removeKeyword}
+                  vaultConnected={vaultConnected}
+                  vaultFolders={folders}
+                  onOpenKnowledgeDB={() => setDockView("knowledge")}
+                />
+              </div>
+
+              {/* Radar takes the upper two thirds; the two smaller cards share the row below. */}
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <div className="flex flex-[2] min-h-0 flex-col">
+                  <ResearchRadarPanel
+                    topics={metrics?.topics ?? []}
+                    explanations={narrative?.radar ?? []}
+                    windowDays={windowDays}
+                    onSelectTopic={selectByFolder}
+                  />
+                </div>
+
+                <div className="grid flex-1 min-h-0 grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="flex flex-col min-w-0 min-h-0">
+                    <WhatChangedPanel
+                      topics={metrics?.topics ?? []}
+                      summaries={narrative?.whatChanged ?? []}
+                      windowDays={windowDays}
+                      onChangeWindow={setWindowDays}
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0 min-h-0">
+                    <ContinueResearchPanel
+                      topics={metrics?.topics ?? []}
+                      visits={visits}
+                      onSelectTopic={selectByFolder}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ---- Panorama: what matters now, no knowledge graph ---- */
+            <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr_300px]">
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <LumiCard onOpenChat={() => setChatOpen(true)} />
+                <CategoryKeywordManager
+                  categories={categories}
+                  selected={null}
+                  onSelect={select}
+                  onAddCategory={addCategory}
+                  onRemoveCategory={removeCategory}
+                  onAddKeyword={addKeyword}
+                  onRemoveKeyword={removeKeyword}
+                  vaultConnected={vaultConnected}
+                  vaultFolders={folders}
+                  onOpenKnowledgeDB={() => setDockView("knowledge")}
+                />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <ResearchRadarPanel
+                  variant="strip"
+                  topics={metrics?.topics ?? []}
+                  explanations={narrative?.radar ?? []}
+                  windowDays={windowDays}
+                  onSelectTopic={selectByFolder}
+                  onOpenFull={() => setDockView("trends")}
+                />
+                <TrendPanoramaPanel topicMap={metrics?.topicMap ?? []} onSelectTopic={selectByFolder} />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <LumiInsightsPanel
+                  insights={narrative?.insights ?? null}
+                  loading={overview.loadingNarrative}
+                  error={overview.narrativeError ?? overview.error}
+                  canRun={canRunNarrative}
+                  onRun={overview.runNarrative}
+                />
+                <SecurityIssuesPanel
+                  issues={narrative?.securityIssues ?? []}
+                  analyzed={Boolean(narrative)}
+                  newsCount={metrics?.securityNewsCount ?? 0}
+                />
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      <ChatModal
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        categoryName={selected?.name ?? null}
+        newsItems={newsItems}
+        vaultPath={vaultPath}
+        vaultFolder={vaultFolder}
+        vaultNoteCount={vaultNoteCount}
+      />
+      <BottomDock
+        activeView={dockView}
+        onNavigate={(view) => {
+          setDockView(view);
+          // Both dock destinations are cross-category views, so leave the detail screen.
+          select(null);
+        }}
+      />
     </div>
   );
 }
