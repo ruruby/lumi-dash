@@ -27,6 +27,15 @@ const DEFAULT_CATEGORIES: Category[] = [
   },
 ];
 
+const LEGACY_SAMPLE_FOLDERS = new Set(["AI 보안", "공급망"]);
+
+function shouldUseBundledCategories(categories: Category[]): boolean {
+  return (
+    categories.length === 0 ||
+    categories.every((category) => LEGACY_SAMPLE_FOLDERS.has(category.folder ?? ""))
+  );
+}
+
 function createId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Math.random()}`;
 }
@@ -42,7 +51,8 @@ export function useCategories() {
       try {
         const parsed: Category[] = JSON.parse(raw);
         // Categories saved before folder scoping existed default to the vault root.
-        setCategories(parsed.map((c) => ({ ...c, folder: c.folder ?? "" })));
+        const normalized = parsed.map((c) => ({ ...c, folder: c.folder ?? "" }));
+        setCategories(shouldUseBundledCategories(normalized) ? DEFAULT_CATEGORIES : normalized);
       } catch {
         // ignore malformed storage
       }

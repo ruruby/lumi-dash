@@ -73,7 +73,11 @@ export function KnowledgeBrowser({ vaultPath, onChangeVaultPath, vaultRootError 
           setFilesState({ status: "error", message: data.error ?? "파일 목록을 읽지 못했어요." });
           return;
         }
-        setFilesState({ status: "ready", files: data.files ?? [] });
+        const files: string[] = data.files ?? [];
+        setFilesState({ status: "ready", files });
+        setSelectedPath((current) =>
+          current && files.includes(current) ? current : (files[0] ?? null),
+        );
       })
       .catch(() => {
         if (!cancelled) setFilesState({ status: "error", message: "네트워크 오류로 목록을 읽지 못했어요." });

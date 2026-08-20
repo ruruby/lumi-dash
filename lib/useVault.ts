@@ -17,6 +17,13 @@ export type VaultState =
 const STORAGE_KEY = "lumi.vaultPath";
 const DEFAULT_VAULT_PATH = "sample_vault";
 
+function shouldUseBundledSample(saved: string | null): boolean {
+  if (saved === null || saved.trim() === "") return true;
+
+  const normalized = saved.trim().replaceAll("\\", "/").replace(/\/$/, "").toLowerCase();
+  return normalized === "sample-vault" || normalized.endsWith("/sample-vault");
+}
+
 /** The vault root is global and set once; folders inside it are picked per category. */
 export function useVaultRoot() {
   const [vaultPath, setVaultPathState] = useState<string>(DEFAULT_VAULT_PATH);
@@ -26,7 +33,12 @@ export function useVaultRoot() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved !== null) setVaultPathState(saved);
+    if (shouldUseBundledSample(saved)) {
+      setVaultPathState(DEFAULT_VAULT_PATH);
+      window.localStorage.setItem(STORAGE_KEY, DEFAULT_VAULT_PATH);
+    } else {
+      setVaultPathState(saved!);
+    }
     setHydrated(true);
   }, []);
 
