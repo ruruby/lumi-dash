@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, FormEvent } from "react";
 import { GlassPanel } from "@/components/lumi/GlassPanel";
+import { MarkdownView } from "@/components/lumi/MarkdownView";
 import { TEXT_FAINT, TEXT_MUTED } from "@/lib/lumi-theme";
 
 type KnowledgeBrowserProps = {
@@ -122,6 +123,20 @@ export function KnowledgeBrowser({ vaultPath, onChangeVaultPath, vaultRootError 
     [filesState],
   );
   const fileCount = filesState.status === "ready" ? filesState.files.length : 0;
+
+  /** Follow a `[[wikilink]]` by finding the note whose filename matches the target. */
+  const followWikiLink = useCallback(
+    (target: string) => {
+      if (filesState.status !== "ready") return;
+      const wanted = target.trim().toLowerCase();
+      const match = filesState.files.find((file) => {
+        const name = file.slice(file.lastIndexOf("/") + 1).replace(/\.md$/i, "");
+        return name.toLowerCase() === wanted;
+      });
+      if (match) setSelectedPath(match);
+    },
+    [filesState],
+  );
 
   return (
     <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[300px_1fr]">
@@ -254,12 +269,11 @@ export function KnowledgeBrowser({ vaultPath, onChangeVaultPath, vaultRootError 
                   {new Date(noteState.note.updatedAt).toLocaleDateString("ko-KR")}
                 </div>
               </div>
-              <pre
-                style={{ color: "rgba(236,234,243,0.82)", fontFamily: "inherit" }}
-                className="text-[12px] leading-relaxed whitespace-pre-wrap break-words"
-              >
-                {noteState.note.content}
-              </pre>
+              <MarkdownView
+                markdown={noteState.note.content}
+                onFollowLink={followWikiLink}
+                className="min-w-0 break-words"
+              />
             </>
           )}
         </GlassPanel>

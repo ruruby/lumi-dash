@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { GlassPanel } from "@/components/lumi/GlassPanel";
-import { TEXT_FAINT, TEXT_MUTED } from "@/lib/lumi-theme";
+import { CollectorStatusPanel } from "@/components/lumi/CollectorStatusPanel";
+import { TEXT_FAINT } from "@/lib/lumi-theme";
 
 type Activity = {
   days: Record<string, number>;
@@ -31,7 +32,7 @@ function level(count: number): string {
   return "bg-white/[0.06]";
 }
 
-export function VaultContributionPanel({ vaultPath }: { vaultPath: string }) {
+export function VaultContributionPanel({ vaultPath, demo }: { vaultPath: string; demo?: boolean }) {
   const [state, setState] = useState<ActivityState>(() =>
     vaultPath ? { status: "loading" } : { status: "error", message: "먼저 Obsidian vault를 연결해 주세요." },
   );
@@ -73,7 +74,7 @@ export function VaultContributionPanel({ vaultPath }: { vaultPath: string }) {
   }, []);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
+    <div className="grid h-full min-h-0 grid-cols-1 gap-5 md:grid-cols-2">
       <GlassPanel className="w-full" fill hoverable cornerColor="#c99a4b">
         <div className="flex items-start justify-between gap-5">
           <div>
@@ -125,16 +126,16 @@ export function VaultContributionPanel({ vaultPath }: { vaultPath: string }) {
             </div>
           </>
         )}
-      </GlassPanel>
-      <GlassPanel className="w-full flex-1" fill hoverable cornerColor="#7a8ec4">
-        <div className="text-[13.5px] font-bold text-white">기록 기준</div>
-        <p className="mt-3 text-[12px] leading-relaxed" style={{ color: TEXT_MUTED }}>
-          각 노트의 frontmatter <code className="text-[#e8c07f]">updated</code> 날짜를 우선 사용하고, 날짜가 없으면 파일 수정 시각을 사용합니다. 하루에 업데이트한 노트 수가 많을수록 잔디가 진해집니다.
-        </p>
-        <p className="mt-3 text-[10.5px]" style={{ color: TEXT_FAINT }}>
-          실제 Vault 파일의 변경 기록을 기반으로 계산되며, Git 커밋 수와는 다릅니다.
+
+        {/* 기록 기준: a caption inside this same card, not a second panel below it. */}
+        <p className="mt-6 text-[10.5px] leading-relaxed" style={{ color: TEXT_FAINT }}>
+          각 노트의 frontmatter <code className="text-[#e8c07f]">updated</code> 날짜를 우선 사용하고, 날짜가
+          없으면 파일 수정 시각을 사용합니다. 실제 Vault 파일의 변경 기록을 기반으로 계산되며 Git 커밋 수와는
+          다릅니다.
         </p>
       </GlassPanel>
+
+      <CollectorStatusPanel demo={demo} />
     </div>
   );
 }

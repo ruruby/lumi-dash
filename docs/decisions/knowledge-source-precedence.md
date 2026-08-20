@@ -9,7 +9,7 @@
 ## Boundaries
 
 - 이 결정은 화면에 표시되는 지식이 어디서 왔는지에 적용된다. 그 지식을 어떤 런타임으로 가공하는지는 [local-claude-cli-runtime](local-claude-cli-runtime.md)이 따로 정한다.
-- vault를 읽기만 한다. 이 앱이 노트를 쓰거나 고치지 않는다.
+- vault 쓰기는 더 이상 금지가 아니다. 사용자가 Research Inbox에서 `Add to Wiki`로 확정한 자료에 한해 신규 노트를 생성하며, 기존 노트는 여전히 수정·삭제하지 않는다. 조건과 근거는 [external-source-vs-vault](external-source-vs-vault.md)가 정한다.
 
 ## Why
 
@@ -20,7 +20,8 @@ LUMI 채팅만 예외로 두 소스를 모두 허용하는 이유는, 두 소스
 ## Reconsider when
 
 - vault 없이도 쓸 수 있어야 한다는 요구가 생겼을 때. 지금은 vault가 없으면 중심 기능이 비어 있는 상태로 안내만 표시된다.
-- 뉴스에서 읽은 내용을 vault 노트로 저장하는 흐름을 만들 때. 그때는 두 소스 사이에 쓰기 방향이 생기므로 이 결정을 다시 본다.
+- ~~외부 자료를 vault 노트로 저장하는 흐름을 만들 때~~ — Research Collector에서 발동됨. 결과는 [external-source-vs-vault](external-source-vs-vault.md)에 있다.
+- 뉴스 패널이 후보 자료 파이프라인에 흡수될 때. 지금은 뉴스와 Collector 후보가 별도 경로로 남아 있다.
 
 ## Still-rejected alternatives
 

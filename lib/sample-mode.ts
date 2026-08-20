@@ -1,6 +1,8 @@
 import type { OverviewMetrics, OverviewNarrative } from "@/lib/overview-types";
 import { TECH_STAGES, type TechProgressResult } from "@/lib/tech-progress-types";
 import type { NewsResult } from "@/lib/useCategoryNews";
+import type { Candidate, TopicProfile } from "@/lib/research-types";
+import type { TopicCollectorStatus } from "@/lib/research-store";
 
 export function isSampleVaultPath(vaultPath: string): boolean {
   const normalized = vaultPath.trim().replaceAll("\\", "/").replace(/\/$/, "").toLowerCase();
@@ -82,6 +84,225 @@ export function getSampleTechProgress(folder: string): TechProgressResult & { de
           { keyword: "멀티모달 평가", stage: TECH_STAGES[0], reason: "평가 기준 후보를 수집하는 탐색 단계입니다." },
         ],
   };
+}
+
+/**
+ * Sample 후보 자료. The Research Inbox flow — four actions and the draft
+ * preview — has to be walkable before the user connects a vault or has a local
+ * `claude` CLI, so these stand in for a real collection run. No external
+ * request is made and no file is ever written in sample mode.
+ */
+export function getSampleCandidates(topicKey: string): Candidate[] {
+  const tools = topicKey.includes("도구");
+  const collectedAt = Date.UTC(2026, 7, 19);
+
+  const rows: Array<
+    [string, string, "paper" | "organization", string, string, number, string, string, string[]]
+  > = tools
+    ? [
+        [
+          "Agentic Coding Assistants: A Survey of Verification Loops",
+          "2026-07-28",
+          "paper",
+          "ACM Computing Surveys",
+          "10.1145/lumi.demo.3021",
+          88,
+          "코딩 에이전트가 생성한 코드를 테스트·실행으로 검증하는 루프를 정리한 서베이로, 개발 도구 카테고리의 핵심 주제와 직접 겹칩니다.",
+          "코딩 에이전트의 검증 루프를 정적 분석, 테스트 생성, 실행 샌드박스 세 축으로 분류하고 각 축의 실패 유형을 정리한 서베이입니다. 검증 없는 생성은 회귀를 만든다는 결론을 데이터로 뒷받침합니다.",
+          ["J. Park", "M. Osei", "L. Fabbri"],
+        ],
+        [
+          "Tracing LLM Applications: Cost, Retrieval, and Tool Calls in One Span Tree",
+          "2026-06-11",
+          "paper",
+          "USENIX ATC",
+          "10.5555/lumi.demo.4412",
+          74,
+          "관측성 도구가 프롬프트·검색·비용을 하나의 trace로 묶는 구조를 다뤄 이 카테고리의 관측성 키워드와 관련됩니다.",
+          "LLM 애플리케이션의 호출을 하나의 span tree로 묶어 검색 단계와 도구 실행까지 추적하는 계측 방식을 제안합니다. 비용 귀속을 span 단위로 계산해 병목을 찾습니다.",
+          ["R. Ilves", "S. Nakamura"],
+        ],
+        [
+          "OWASP Top 10 for LLM Applications: 2026 Refresh",
+          "2026-08-05",
+          "organization",
+          "OWASP",
+          "",
+          81,
+          "LLM 애플리케이션 보안 항목이 개발 도구 체인의 검증·관측성 요구와 직접 연결됩니다.",
+          "LLM 애플리케이션의 상위 위험 10개를 갱신하며 에이전트 도구 권한과 공급망 항목을 새로 넣었습니다. 각 항목에 검증 지점을 제시합니다.",
+          [],
+        ],
+        [
+          "Thermal Comfort Modeling in Retrofitted Office Buildings",
+          "2026-07-02",
+          "paper",
+          "Building and Environment",
+          "10.1016/lumi.demo.998",
+          8,
+          "키워드 약어가 우연히 겹쳤을 뿐 건축 열환경 연구로, 이 카테고리와 관련이 없습니다.",
+          "리트로핏 오피스 건물의 열 쾌적성을 시뮬레이션한 연구입니다.",
+          ["A. Bianchi"],
+        ],
+      ]
+    : [
+        [
+          "Retrieval-Augmented Generation Under Long Context: A Controlled Comparison",
+          "2026-08-02",
+          "paper",
+          "NeurIPS",
+          "10.5555/lumi.demo.1187",
+          91,
+          "긴 문맥과 RAG를 같은 조건에서 비교해 이 카테고리의 RAG 키워드와 정면으로 맞물립니다.",
+          "동일 데이터셋에서 긴 문맥 단독과 RAG 결합을 비교해, 문서 수가 늘어날 때 검색·재정렬 결합이 근거성과 비용에서 우위를 보인다고 보고합니다.",
+          ["H. Lindqvist", "T. Abebe", "Y. Sun"],
+        ],
+        [
+          "Failure Modes of Tool-Using Language Agents",
+          "2026-07-19",
+          "paper",
+          "ICLR",
+          "10.5555/lumi.demo.2245",
+          85,
+          "도구를 쓰는 에이전트의 실패 유형을 분류해 에이전트 시스템 키워드와 직접 관련됩니다.",
+          "도구 호출 에이전트의 실패를 계획 오류, 도구 오사용, 복구 실패로 나누고 각 유형의 탐지 신호를 제시합니다. 자율성보다 상태 관리가 성공률을 좌우한다고 결론합니다.",
+          ["D. Moreau", "K. Ranganathan"],
+        ],
+        [
+          "NIST AI Risk Management: Generative AI Profile Update",
+          "2026-07-30",
+          "organization",
+          "NIST",
+          "",
+          72,
+          "생성형 AI 위험 관리 지침이 평가·검증 주제와 연결되지만 기술 세부보다 정책 층위입니다.",
+          "생성형 AI 시스템의 위험 관리 항목을 갱신하며 평가 증거와 문서화 요구를 구체화했습니다.",
+          [],
+        ],
+        [
+          "Multimodal Evaluation Beyond OCR Accuracy",
+          "2026-06-24",
+          "paper",
+          "CVPR",
+          "10.5555/lumi.demo.7731",
+          68,
+          "멀티모달 평가 기준을 세분화해 이 카테고리의 멀티모달 키워드와 관련됩니다.",
+          "화면·문서 작업에서 OCR 정확도와 시각적 추론을 분리해 측정해야 한다고 주장하며 분리형 평가 세트를 제안합니다.",
+          ["N. Okonkwo"],
+        ],
+      ];
+
+  return rows.map(([title, publishedAt, sourceType, venue, doi, score, reason, summary, authors], index) => ({
+    id: `sample-${tools ? "tools" : "core"}-${index + 1}`,
+    topicKey,
+    sourceType,
+    title,
+    url: doi ? `https://doi.org/${doi}` : `https://example.com/lumi-demo/${index + 1}`,
+    doi: doi || null,
+    openAlexId: null,
+    publishedAt,
+    authors,
+    venue,
+    organization: sourceType === "organization" ? venue : null,
+    citedByCount: sourceType === "paper" ? 12 - index * 3 : null,
+    excerpt: summary,
+    foundVia: sourceType === "organization" ? `${venue} 공식 피드` : "샘플 키워드 검색",
+    analysis: { score, reason, summary },
+    status: "new",
+    collectedAt: collectedAt - index * 86_400_000,
+  }));
+}
+
+export function getSampleTopicProfile(topicKey: string): TopicProfile {
+  const tools = topicKey.includes("도구");
+  return {
+    topicKey,
+    expandedKeywords: tools
+      ? [
+          { value: "agentic code review", origin: "ai" },
+          { value: "LLM tracing", origin: "ai" },
+        ]
+      : [
+          { value: "long context retrieval", origin: "ai" },
+          { value: "tool-using agents", origin: "ai" },
+        ],
+    importantAuthors: tools ? [{ value: "J. Park", origin: "ai" }] : [{ value: "H. Lindqvist", origin: "ai" }],
+    importantOrganizations: [{ value: tools ? "OWASP" : "NIST", origin: "ai" }],
+    seedPaperIds: [],
+    excludedTopics: [{ value: tools ? "건축 열환경" : "전통적 침투 테스트", origin: "ai" }],
+  };
+}
+
+export function getSampleNoteDraft(candidate: Candidate): string {
+  // Conditional rows are dropped with `?? []` so intentional blank lines survive.
+  return [
+    "---",
+    "updated: 2026-08-20",
+    `source_type: ${candidate.sourceType}`,
+    `source_url: ${candidate.url}`,
+    ...(candidate.doi ? [`doi: ${candidate.doi}`] : []),
+    "collected_by: lumi-research-collector",
+    "---",
+    "",
+    `# ${candidate.title}`,
+    "",
+    "## Summary",
+    "",
+    `[샘플 초안] ${candidate.analysis?.summary ?? ""}`,
+    "",
+    "## Key Findings",
+    "",
+    "- 샘플 모드에서는 실제 AI 생성 대신 준비된 초안을 보여줍니다.",
+    "- 확정을 눌러도 파일은 만들어지지 않습니다.",
+    "- 자신의 Vault를 연결하면 같은 흐름이 실제 노트로 저장됩니다.",
+    "",
+    "## Research / Industry Implications",
+    "",
+    "이 자료는 카테고리의 핵심 주제와 연결되며, 기존 노트의 판단을 갱신할 근거가 됩니다.",
+    "",
+    "## Related Topics",
+    "",
+    "[[검색 증강 생성]]",
+    "[[에이전트 시스템]]",
+    "",
+    "## Source",
+    "",
+    `- Type: ${candidate.sourceType === "paper" ? "학술 논문" : "기관 발행물"}`,
+    `- Title: ${candidate.title}`,
+    ...(candidate.authors.length > 0 ? [`- Authors: ${candidate.authors.join(", ")}`] : []),
+    ...(candidate.venue ? [`- Venue: ${candidate.venue}`] : []),
+    ...(candidate.publishedAt ? [`- Published: ${candidate.publishedAt}`] : []),
+    ...(candidate.doi ? [`- DOI: ${candidate.doi}`] : []),
+    `- URL: ${candidate.url}`,
+    "- Collected by: Lumi Research Collector",
+    "",
+  ].join("\n");
+}
+
+/** Demo collector status for the profile view's summary card. */
+export function getSampleCollectorStatus(): TopicCollectorStatus[] {
+  return [
+    {
+      topicKey: "LLM 개발 도구",
+      lastRunAt: Date.UTC(2026, 7, 19, 9, 30),
+      total: 4,
+      new: 3,
+      important: 0,
+      readLater: 0,
+      added: 0,
+      ignored: 1,
+    },
+    {
+      topicKey: "LLM 핵심 기술",
+      lastRunAt: Date.UTC(2026, 7, 18, 21, 10),
+      total: 4,
+      new: 3,
+      important: 0,
+      readLater: 0,
+      added: 0,
+      ignored: 1,
+    },
+  ];
 }
 
 export function getSampleChatReply(source: "wiki" | "news", question: string): string {

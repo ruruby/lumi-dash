@@ -17,11 +17,16 @@ import { LumiCard } from "@/components/lumi/LumiCard";
 import { ChatModal } from "@/components/lumi/ChatModal";
 import { AmbientBackground } from "@/components/lumi/AmbientBackground";
 import { BottomDock, type DockView } from "@/components/lumi/BottomDock";
+import { ResearchInboxPanel } from "@/components/lumi/ResearchInboxPanel";
+import { TopicProfilePanel } from "@/components/lumi/TopicProfilePanel";
+import { SettingsPanel } from "@/components/lumi/SettingsPanel";
+import { InboxTeaser } from "@/components/lumi/InboxTeaser";
 import { useCategoryNews } from "@/lib/useCategoryNews";
 import { useVaultRoot, useVaultNotes } from "@/lib/useVault";
 import { useCategories } from "@/lib/useCategories";
 import { useOverview } from "@/lib/useOverview";
 import { useVisitLog } from "@/lib/useVisitLog";
+import { useInboxCounts, useResearchInbox } from "@/lib/useResearchInbox";
 import { MANROPE, PAGE_BACKGROUND, TEXT } from "@/lib/lumi-theme";
 import { isSampleVaultPath } from "@/lib/sample-mode";
 import { VaultContributionPanel } from "@/components/lumi/VaultContributionPanel";
@@ -93,6 +98,31 @@ export default function Home() {
   const narrative = overview.narrative;
   const canRunNarrative = Boolean(vaultPath) && categories.length > 0;
 
+  // Research Inbox: candidates are keyed by the category's vault folder, the
+  // same key the overview and visit log already use.
+  const topicKeys = useMemo(() => categories.map((category) => category.folder), [categories]);
+  const { counts: inboxCounts, total: inboxTotal } = useInboxCounts(topicKeys, sampleMode);
+  const inbox = useResearchInbox(
+    selected ? vaultFolder : null,
+    selected?.name ?? null,
+    keywords,
+    { demo: sampleMode, vaultPath },
+  );
+  const inboxCandidates = inbox.state.status === "ready" ? inbox.state.candidates : [];
+  const inboxProfile = inbox.state.status === "ready" ? inbox.state.profile : null;
+
+  function removeProfileEntry(
+    field: "expandedKeywords" | "importantAuthors" | "importantOrganizations" | "excludedTopics",
+    value: string,
+  ) {
+    if (sampleMode || !selected) return;
+    void fetch("/api/research", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "removeProfileEntry", topicKey: vaultFolder, field, value }),
+    }).then(() => inbox.reload());
+  }
+
   return (
     <div
       style={{ fontFamily: MANROPE, background: PAGE_BACKGROUND, color: TEXT }}
@@ -100,12 +130,62 @@ export default function Home() {
     >
       <AmbientBackground />
       <div className="relative z-10 flex flex-1 min-h-0 flex-col min-w-0">
-        <TopBar demoMode={sampleMode} sampleAvailable={sampleAvailable} onToggleDemo={toggleSampleMode} />
+        <TopBar demoMode={sampleMode} />
 
         {/* The page never scrolls. Each card is fixed to the column height and
             scrolls its own content instead. */}
         <main className="flex-1 min-h-0 overflow-hidden px-8 py-8 pb-24">
-          {selected ? (
+          {/* Inbox comes before the detail branch because it keeps a category
+              selected — it is the one dock view that is topic-scoped. */}
+          {dockView === "inbox" ? (
+            /* ---- Research Inbox: external candidates awaiting the user's call ---- */
+            <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr_300px]">
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <LumiCard onOpenChat={() => setChatOpen(true)} />
+                <CategoryKeywordManager
+                  categories={categories}
+                  selected={selected}
+                  onSelect={select}
+                  onAddCategory={addCategory}
+                  onRemoveCategory={removeCategory}
+                  onAddKeyword={addKeyword}
+                  onRemoveKeyword={removeKeyword}
+                  vaultConnected={vaultConnected}
+                  vaultFolders={folders}
+                  onOpenKnowledgeDB={() => setDockView("knowledge")}
+                />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                <ResearchInboxPanel
+                  categoryName={selected?.name ?? null}
+                  hasKeywords={keywords.length > 0}
+                  targetFolder={vaultFolder}
+                  vaultConnected={vaultConnected}
+                  inbox={inbox}
+                />
+              </div>
+
+              <div className="flex flex-col gap-5 min-w-0 h-full min-h-0 overflow-y-auto lumi-scroll">
+                <TopicProfilePanel
+                  categoryName={selected?.name ?? null}
+                  coreKeywords={keywords}
+                  profile={inboxProfile}
+                  candidates={inboxCandidates}
+                  demo={sampleMode}
+                  onRemoveEntry={sampleMode ? undefined : removeProfileEntry}
+                />
+              </div>
+            </div>
+          ) : dockView === "settings" ? (
+            <SettingsPanel
+              vaultPath={vaultPath}
+              sampleAvailable={sampleAvailable}
+              sampleEnabled={sampleEnabled}
+              onToggleSample={toggleSampleMode}
+              onOpenKnowledgeDB={() => setDockView("knowledge")}
+            />
+          ) : selected ? (
             /* ---- Detail: one technology in depth ---- */
             <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr_300px]">
               <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
@@ -125,6 +205,8 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col gap-5 min-w-0 h-full min-h-0">
+                {/* Keeps the category selected, so the inbox opens filtered to this topic. */}
+                <InboxTeaser count={inboxCounts[vaultFolder] ?? 0} onReview={() => setDockView("inbox")} />
                 <ResearchGraphPanel state={vaultState} vaultPath={vaultPath} folder={vaultFolder} />
                 <TechProgressPanel
                   key={`${vaultPath}::${vaultFolder}`}
@@ -147,7 +229,7 @@ export default function Home() {
             /* ---- Knowledge: browse the vault's raw files directly ---- */
             <KnowledgeBrowser vaultPath={vaultPath} onChangeVaultPath={setVaultPath} vaultRootError={rootError} />
           ) : dockView === "profile" ? (
-            <VaultContributionPanel vaultPath={vaultPath} />
+            <VaultContributionPanel vaultPath={vaultPath} demo={sampleMode} />
           ) : dockView === "trends" ? (
             /* ---- Trends: the time-and-activity view behind the dock's trend icon ---- */
             <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr]">
@@ -259,10 +341,12 @@ export default function Home() {
       />
       <BottomDock
         activeView={dockView}
+        inboxCount={inboxTotal}
         onNavigate={(view) => {
           setDockView(view);
-          // Both dock destinations are cross-category views, so leave the detail screen.
-          select(null);
+          // The inbox is topic-scoped, so it keeps the current category.
+          // Every other destination is cross-category and leaves the detail screen.
+          if (view !== "inbox") select(null);
         }}
       />
     </div>

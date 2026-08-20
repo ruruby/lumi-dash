@@ -9,7 +9,7 @@ const MAX_CONTENT_CHARS = 4000;
 const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
 
 /** Reject absolute paths and `..` so a category folder can only ever be inside the vault. */
-function resolveScope(vaultPath: string, folder: string): string {
+export function resolveScope(vaultPath: string, folder: string): string {
   if (!folder) return vaultPath;
 
   const resolved = path.resolve(vaultPath, folder);

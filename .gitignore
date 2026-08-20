@@ -50,3 +50,6 @@ next-env.d.ts
 
 # worktree
 .claude/worktrees
+
+# lumi research candidate store (external material, never versioned)
+/.lumi
