@@ -86,6 +86,48 @@ export async function listVaultFiles(vaultPath: string): Promise<string[]> {
     .sort((a, b) => a.localeCompare(b, "ko"));
 }
 
+export type VaultActivity = {
+  days: Record<string, number>;
+  totalUpdates: number;
+  activeDays: number;
+  currentStreak: number;
+};
+
+/** Count note improvements by calendar day using frontmatter updated or file mtime. */
+export async function getVaultActivity(vaultPath: string, rangeDays = 182): Promise<VaultActivity> {
+  const stats = await stat(vaultPath);
+  if (!stats.isDirectory()) throw new Error("지정한 경로가 폴더가 아니에요.");
+
+  const files: string[] = [];
+  await collectMarkdownFiles(vaultPath, files);
+  const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000;
+  const days: Record<string, number> = {};
+
+  await Promise.all(files.map(async (file) => {
+    const [content, fileStat] = await Promise.all([readFile(file, "utf8"), stat(file)]);
+    const updatedAt = extractUpdatedAt(content, fileStat.mtimeMs);
+    if (updatedAt < cutoff) return;
+    const key = new Date(updatedAt).toISOString().slice(0, 10);
+    days[key] = (days[key] ?? 0) + 1;
+  }));
+
+  let currentStreak = 0;
+  const cursor = new Date();
+  for (let index = 0; index < rangeDays; index += 1) {
+    const key = cursor.toISOString().slice(0, 10);
+    if (!days[key]) break;
+    currentStreak += 1;
+    cursor.setUTCDate(cursor.getUTCDate() - 1);
+  }
+
+  return {
+    days,
+    totalUpdates: Object.values(days).reduce((sum, count) => sum + count, 0),
+    activeDays: Object.keys(days).length,
+    currentStreak,
+  };
+}
+
 /** One note's raw markdown, for reading in the browser. */
 export async function readVaultNote(
   vaultPath: string,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listVaultFiles, listVaultFolders, readVault, readVaultNote } from "@/lib/vault";
+import { getVaultActivity, listVaultFiles, listVaultFolders, readVault, readVaultNote } from "@/lib/vault";
 
 function errorResponse(error: unknown) {
   const code = (error as NodeJS.ErrnoException)?.code;
@@ -34,6 +34,10 @@ export async function GET(request: NextRequest) {
     if (mode === "files") {
       const files = await listVaultFiles(vaultPath);
       return NextResponse.json({ files });
+    }
+
+    if (mode === "activity") {
+      return NextResponse.json(await getVaultActivity(vaultPath));
     }
 
     if (mode === "note") {

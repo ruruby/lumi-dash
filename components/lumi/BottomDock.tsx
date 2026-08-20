@@ -1,4 +1,4 @@
-export type DockView = "panorama" | "trends" | "knowledge";
+export type DockView = "panorama" | "trends" | "knowledge" | "profile";
 
 type BottomDockProps = {
   activeView: DockView;
@@ -6,7 +6,7 @@ type BottomDockProps = {
 };
 
 // Floating icon dock from design/dashboard_preview.html. Dashboard/trends/knowledge
-// navigate; the profile icon has no destination yet.
+// navigate; the profile icon opens the vault activity view.
 export function BottomDock({ activeView, onNavigate }: BottomDockProps) {
   const activeStyle = {
     background: "linear-gradient(160deg, rgba(201,154,75,0.28), rgba(201,154,75,0.1))",
@@ -106,7 +106,9 @@ export function BottomDock({ activeView, onNavigate }: BottomDockProps) {
 
       <div className="w-px h-7 mx-0.5" style={{ background: "rgba(255,255,255,0.1)" }} />
 
-      <div
+      <button
+        type="button"
+        onClick={() => onNavigate("profile")}
         className="lumi-dock-btn w-11 h-11 rounded-full flex items-center justify-center"
         style={{
           background: "radial-gradient(circle at 32% 28%, #6f86bd, #3a4568 60%, #1c2340 100%)",
@@ -118,7 +120,7 @@ export function BottomDock({ activeView, onNavigate }: BottomDockProps) {
           <circle cx="12" cy="8" r="4" />
           <path d="M4 21c0-4 3.5-6 8-6s8 2 8 6" />
         </svg>
-      </div>
+      </button>
     </nav>
   );
 }

@@ -24,6 +24,7 @@ import { useOverview } from "@/lib/useOverview";
 import { useVisitLog } from "@/lib/useVisitLog";
 import { MANROPE, PAGE_BACKGROUND, TEXT } from "@/lib/lumi-theme";
 import { isSampleVaultPath } from "@/lib/sample-mode";
+import { VaultContributionPanel } from "@/components/lumi/VaultContributionPanel";
 
 const EMPTY_KEYWORDS: string[] = [];
 
@@ -126,6 +127,8 @@ export default function Home() {
           ) : dockView === "knowledge" ? (
             /* ---- Knowledge: browse the vault's raw files directly ---- */
             <KnowledgeBrowser vaultPath={vaultPath} onChangeVaultPath={setVaultPath} vaultRootError={rootError} />
+          ) : dockView === "profile" ? (
+            <VaultContributionPanel vaultPath={vaultPath} />
           ) : dockView === "trends" ? (
             /* ---- Trends: the time-and-activity view behind the dock's trend icon ---- */
             <div className="grid gap-5 h-full min-h-0 grid-cols-1 md:grid-cols-[270px_1fr]">
